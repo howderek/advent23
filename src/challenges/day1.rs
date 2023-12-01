@@ -8,7 +8,7 @@ pub struct Args {
     file: String,
 
     #[clap(long, short, action)]
-    gold: bool,
+    part2: bool,
 }
 
 fn parse_digit(input: &str) -> Option<u64> {
@@ -48,7 +48,7 @@ fn extract_digits(input: String) -> Option<u64> {
     let mut count: u64 = 0;
 
     for line in input.lines() {
-        let c = re.captures_iter(line).collect::<Vec<_>>();
+        let c: Vec<_> = re.captures_iter(line).collect();
         let first_digit = c.get(0)?.get(0)?.as_str().parse::<u64>().ok()?;
         let last_digit = c.get(c.len() - 1)?.get(0)?.as_str().parse::<u64>().ok()?;
         count += (first_digit * 10) + last_digit
@@ -60,7 +60,7 @@ fn extract_digits(input: String) -> Option<u64> {
 pub fn entrypoint(args: &Args) {
     let input = fs::read_to_string(&args.file).expect("I/O error");
     let mut extract_fn = extract_digits as fn(String) -> Option<u64>;
-    if args.gold {
+    if args.part2 {
         extract_fn = extract_digits_written as fn(String) -> Option<u64>;
     }
     match extract_fn(input) {
