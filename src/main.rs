@@ -12,8 +12,11 @@ struct Cli {
 
 #[derive(clap::Subcommand, Debug)]
 enum Command {
+    /// sum first and last digit of each line ("Trebuchet!?")
     Day1(challenges::day01::Args),
+    /// multidimensonal data processing ("Cube Conundrum")
     Day2(challenges::day02::Args),
+    /// 2D array traversal ("Gear Ratios")
     Day3(challenges::day03::Args),
     Day4(challenges::day04::Args),
     Day5(challenges::day05::Args),
