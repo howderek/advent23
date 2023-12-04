@@ -18,6 +18,7 @@ enum Command {
     Day2(challenges::day02::Args),
     /// 2D array traversal ("Gear Ratios")
     Day3(challenges::day03::Args),
+    /// set comparison ("Scratchcards")
     Day4(challenges::day04::Args),
     Day5(challenges::day05::Args),
     Day6(challenges::day06::Args),
