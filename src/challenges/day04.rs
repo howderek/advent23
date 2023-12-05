@@ -1,6 +1,8 @@
 use clap::{self};
 use std::{fs, str};
 
+use advent23::parse_number_list;
+
 #[derive(clap::Args, Debug)]
 pub struct Args {
     #[arg(default_value_t = String::from("./inputs/day4/input.txt"))]
@@ -10,19 +12,11 @@ pub struct Args {
     part2: bool,
 }
 
-fn parse_list(s: &str) -> Vec<u64> {
-    s.split(" ")
-        .into_iter()
-        .map(|x| x.parse())
-        .flatten()
-        .collect()
-}
-
 pub fn score_line(line: &str) -> u64 {
     let metadata_and_data: Vec<&str> = line.split(": ").collect();
     let data: Vec<&str> = metadata_and_data[1].split(" | ").collect();
-    let winners: Vec<u64> = parse_list(data[0]);
-    let assigned: Vec<u64> = parse_list(data[1]);
+    let winners: Vec<u64> = parse_number_list(data[0]);
+    let assigned: Vec<u64> = parse_number_list(data[1]);
     let mut score: u64 = 0;
     // I know this looks dumb, it's because linear search is often faster whem there are very few elements
     for number in &assigned {
