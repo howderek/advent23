@@ -22,18 +22,14 @@ impl Race {
         Self { time_limit, record }
     }
 
-    pub fn ways_to_win(&self) -> u64 {
-        let mut ways_to_win = 0;
-        for t in 0..self.time_limit {
-            let acceleration = 1;
-            let velocity = acceleration * t;
-            let distance = velocity * (self.time_limit - t);
-            if distance > self.record {
-                // println!("{} * {} = {} > {}", t, velocity, distance, self.record);
-                ways_to_win += 1;
-            }
-        }
-        ways_to_win
+    pub fn ways_to_win_optimized(&self) -> u64 {
+        let r = self.record as f64;
+        let l = self.time_limit as f64;
+        let record_velocity = f64::floor((l - f64::sqrt((l * l) - (4.0 * r))) / 2.0);
+        let ways_to_play = self.time_limit - 1;
+        let ways_to_lose = (record_velocity) * 2.0;
+        let ways_to_win = ways_to_play - ways_to_lose as u64;
+        return ways_to_win;
     }
 }
 
@@ -45,7 +41,7 @@ pub fn part1(contents: &str) -> u64 {
     for (time, record) in zip(times, records) {
         races.push(Race::new(time, record));
     }
-    races.iter().map(|r| r.ways_to_win()).product()
+    races.iter().map(|r| r.ways_to_win_optimized()).product()
 }
 
 pub fn entrypoint(args: &Args) {
