@@ -115,8 +115,7 @@ impl ResourceMap {
         let overlaps: Vec<(u64, u64)> = self
             .correspondences
             .iter()
-            .map(|c| c.overlaps(start, end))
-            .flatten()
+            .flat_map(|c| c.overlaps(start, end))
             .collect();
         if overlaps.len() > 0 {
             return overlaps;
@@ -191,8 +190,10 @@ impl SeedData {
             while let Some((start, end)) = current_stack.pop() {
                 next_stack.append(&mut resource_map.overlaps(start, end));
             }
+            println!("next_stack: {:?}", next_stack);
             current_stack = next_stack;
         }
+        println!("");
         return current_stack.iter().min().unwrap().0;
     }
 
