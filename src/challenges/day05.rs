@@ -31,7 +31,7 @@ impl Correspondence {
     }
 
     pub fn from_line(line: &str) -> Self {
-        let nums = parse_number_list(line);
+        let nums: Vec<u64> = parse_number_list(line);
         Self::new(nums[1], nums[0], nums[2])
     }
 

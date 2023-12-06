@@ -12,21 +12,13 @@ pub struct Args {
     part2: bool,
 }
 
-pub fn parse_nums<T: std::str::FromStr>(s: &str) -> Vec<T> {
-    s.split_whitespace()
-        .into_iter()
-        .map(|x| x.parse())
-        .flatten()
-        .collect()
-}
-
 pub fn entrypoint(args: &Args) {
     let input = fs::read_to_string(&args.file).expect("I/O error");
     println!(
         "{}",
         zip(
-            parse_nums::<f64>(input.lines().nth(0).unwrap().split(":").last().unwrap()),
-            parse_nums::<f64>(input.lines().nth(1).unwrap().split(":").last().unwrap()),
+            parse_number_list::<f64>(input.lines().nth(0).unwrap().split(":").last().unwrap()),
+            parse_number_list::<f64>(input.lines().nth(1).unwrap().split(":").last().unwrap()),
         )
         .map(|(l, r)| l - f64::floor((l - f64::sqrt((l * l) - (4.0 * r))) / 2.0) * 2.0 - 1.0)
         .product::<f64>()
