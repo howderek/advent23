@@ -43,32 +43,58 @@ impl Correspondence {
         }
     }
 
-    pub fn overlaps(&self, start: u64, end: u64) -> Option<(u64, u64)> {
-        if start >= self.source_start && start <= (self.source_start + self.range_length) {
-            if end <= self.source_start + self.range_length {
-                return Some((
-                    self.destination_start + start - self.source_start,
-                    self.destination_start + (end - self.source_start),
+    pub fn overlaps(&self, ranges: &Vec<(u64, u64)>) -> (Vec<(u64, u64)>, Vec<(u64, u64)>) {
+        let mut leftovers = vec![];
+        let mut overlaps = vec![];
+
+        // println!(
+        //     "{:?} into ({}-{} -> {}-{}) (delta {})",
+        //     ranges,
+        //     self.source_start,
+        //     self.source_start + self.range_length,
+        //     self.destination_start,
+        //     self.destination_start + self.range_length,
+        //     self.destination_start as i64 - self.source_start as i64,
+        // );
+
+        for range_tuple in ranges.iter() {
+            let (start, end) = *range_tuple;
+            if start >= self.source_start && start <= (self.source_start + self.range_length) {
+                if end >= self.source_start && end <= self.source_start + self.range_length {
+                    overlaps.push((
+                        self.destination_start + (start - self.source_start),
+                        self.destination_start + (end - self.source_start),
+                    ));
+                } else {
+                    overlaps.push((
+                        self.destination_start + (start - self.source_start),
+                        self.destination_start + self.range_length,
+                    ));
+                    leftovers.push((self.source_start + self.range_length + 1, end));
+                }
+            } else if end >= self.source_start && end <= (self.source_start + self.range_length) {
+                leftovers.push((start, self.source_start - 1));
+                overlaps.push((
+                    self.destination_start,
+                    self.destination_start + end - self.source_start,
                 ));
-            } else {
-                return Some((
-                    self.destination_start + start - self.source_start,
+            } else if start < self.source_start && end > (self.source_start + self.range_length) {
+                leftovers.push((start, self.source_start - 1));
+                overlaps.push((
+                    self.destination_start,
                     self.destination_start + self.range_length,
                 ));
+                leftovers.push((self.source_start + self.range_length + 1, end));
+            } else {
+                leftovers.push((start, end));
             }
-        } else if end >= self.source_start && end <= (self.source_start + self.range_length) {
-            Some((
-                self.destination_start,
-                self.destination_start + end - self.source_start,
-            ))
-        } else if start < self.source_start && end > (self.source_start + self.range_length) {
-            Some((
-                self.destination_start,
-                self.destination_start + self.range_length,
-            ))
-        } else {
-            None
         }
+
+        // println!(
+        //     "    leftovers: {:?}\n     overlaps: {:?}\n",
+        //     leftovers, overlaps
+        // );
+        return (leftovers, overlaps);
     }
 }
 
@@ -112,16 +138,19 @@ impl ResourceMap {
     }
 
     pub fn overlaps(&self, start: u64, end: u64) -> Vec<(u64, u64)> {
-        let overlaps: Vec<(u64, u64)> = self
-            .correspondences
-            .iter()
-            .flat_map(|c| c.overlaps(start, end))
-            .collect();
-        if overlaps.len() > 0 {
-            return overlaps;
-        } else {
-            return vec![(start, end)];
+        let mut solved = vec![];
+        let mut unresolved = vec![(start, end)];
+        // println!("\n\n");
+        // self.describe();
+        // println!();
+        for correspondence in self.correspondences.iter() {
+            let (leftovers, mut overlaps) = correspondence.overlaps(&unresolved);
+            unresolved = leftovers;
+            solved.append(&mut overlaps);
         }
+        solved.append(&mut unresolved);
+        // println!("solved: {:?}", solved);
+        return solved;
     }
 
     pub fn describe(&self) {
@@ -190,10 +219,10 @@ impl SeedData {
             while let Some((start, end)) = current_stack.pop() {
                 next_stack.append(&mut resource_map.overlaps(start, end));
             }
-            println!("next_stack: {:?}", next_stack);
+            // println!("next_stack: {:?}", next_stack);
             current_stack = next_stack;
         }
-        println!("");
+        // println!("");
         return current_stack.iter().min().unwrap().0;
     }
 
