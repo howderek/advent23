@@ -12,40 +12,23 @@ pub struct Args {
     part2: bool,
 }
 
-struct Race {
-    time_limit: u64,
-    record: u64,
-}
-
-impl Race {
-    pub fn new(time_limit: u64, record: u64) -> Self {
-        Self { time_limit, record }
-    }
-
-    pub fn ways_to_win_optimized(&self) -> u64 {
-        let r = self.record as f64;
-        let l = self.time_limit as f64;
-        let record_velocity = f64::floor((l - f64::sqrt((l * l) - (4.0 * r))) / 2.0);
-        let ways_to_play = self.time_limit - 1;
-        let ways_to_lose = (record_velocity) * 2.0;
-        let ways_to_win = ways_to_play - ways_to_lose as u64;
-        return ways_to_win;
-    }
-}
-
-pub fn part1(contents: &str) -> u64 {
-    let mut line_iter = contents.lines();
-    let times = parse_number_list(line_iter.next().unwrap().split(":").last().unwrap());
-    let records = parse_number_list(line_iter.next().unwrap().split(":").last().unwrap());
-    let mut races: Vec<Race> = vec![];
-    for (time, record) in zip(times, records) {
-        races.push(Race::new(time, record));
-    }
-    races.iter().map(|r| r.ways_to_win_optimized()).product()
+pub fn parse_nums<T: std::str::FromStr>(s: &str) -> Vec<T> {
+    s.split_whitespace()
+        .into_iter()
+        .map(|x| x.parse())
+        .flatten()
+        .collect()
 }
 
 pub fn entrypoint(args: &Args) {
     let input = fs::read_to_string(&args.file).expect("I/O error");
-    let out: u64 = part1(&input);
-    println!("{}", out);
+    println!(
+        "{}",
+        zip(
+            parse_nums::<f64>(input.lines().nth(0).unwrap().split(":").last().unwrap()),
+            parse_nums::<f64>(input.lines().nth(1).unwrap().split(":").last().unwrap()),
+        )
+        .map(|(l, r)| l - f64::floor((l - f64::sqrt((l * l) - (4.0 * r))) / 2.0) * 2.0 - 1.0)
+        .product::<f64>()
+    );
 }
