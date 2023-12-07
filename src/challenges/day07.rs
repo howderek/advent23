@@ -1,5 +1,4 @@
 use clap;
-use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::{fs, str};
 
@@ -50,6 +49,21 @@ impl Card {
     }
 }
 
+fn score_cardmap_of_a_kind(cardmap: &HashMap<Card, u8>) -> u64 {
+    let mut score = 0;
+    const MAX_SINGLE: u64 = 15 * 15 * 15 * 15 * 15 * 15;
+    for (card, count) in cardmap.iter() {
+        match count {
+            2 => score += MAX_SINGLE,
+            3 => score += 3 * MAX_SINGLE,
+            4 => score += 5 * MAX_SINGLE,
+            5 => score += 6 * MAX_SINGLE,
+            _ => score += *card as u64,
+        }
+    }
+    return score;
+}
+
 pub fn score_hand(hand: &Vec<Card>) -> u64 {
     let mut cardmap: HashMap<Card, u8> = HashMap::new();
     let mut score: u64 = 0;
@@ -60,16 +74,7 @@ pub fn score_hand(hand: &Vec<Card>) -> u64 {
         score += *card as u64 * factor;
         factor *= 15;
     }
-    const MAX_SINGLE: u64 = 15 * 15 * 15 * 15 * 15 * 15;
-    for (card, count) in cardmap {
-        match count {
-            2 => score += MAX_SINGLE,
-            3 => score += 3 * MAX_SINGLE,
-            4 => score += 5 * MAX_SINGLE,
-            5 => score += 6 * MAX_SINGLE,
-            _ => score += card as u64,
-        }
-    }
+    score += score_cardmap_of_a_kind(&cardmap);
     return score;
 }
 
@@ -92,7 +97,6 @@ pub fn score_jokers(hand: &Vec<Card>) -> u64 {
         score += card_value * factor;
         factor *= 15;
     }
-    const MAX_SINGLE: u64 = 15 * 15 * 15 * 15 * 15 * 15;
     for (card, count) in cardmap.iter() {
         let count_and_value = (*count as u64 * 100) + *card as u64;
         if count_and_value > max_count_and_value {
@@ -102,18 +106,11 @@ pub fn score_jokers(hand: &Vec<Card>) -> u64 {
     }
     let count = cardmap.entry(joker_card).or_insert(0);
     *count += joker_count;
-    for (card, count) in cardmap {
-        match count {
-            2 => score += MAX_SINGLE,
-            3 => score += 3 * MAX_SINGLE,
-            4 => score += 5 * MAX_SINGLE,
-            5 => score += 6 * MAX_SINGLE,
-            _ => score += card as u64,
-        }
-    }
+    score += score_cardmap_of_a_kind(&cardmap);
     return score;
 }
 
+#[allow(dead_code)]
 #[derive(Eq, Debug)]
 pub struct Hand {
     cards: Vec<Card>,
@@ -133,7 +130,7 @@ impl Hand {
     }
 
     pub fn from_string(input: String, jokers: bool) -> Option<Self> {
-        let mut parts: Vec<&str> = input.split_whitespace().collect();
+        let parts: Vec<&str> = input.split_whitespace().collect();
         let mut cards: Vec<Card> = vec![];
         for c in parts[0].chars() {
             let card = Card::from_char(c)?;
@@ -165,50 +162,35 @@ impl PartialEq for Hand {
     }
 }
 
-pub fn part1(args: &Args) -> u64 {
-    let contents = fs::read_to_string(&args.file).expect("I/O error");
-    let mut max_score: u64 = 0;
-    let mut hands: Vec<Hand> = contents
+pub fn load_hands(filename: &String, jokers: bool) -> Vec<Hand> {
+    let contents = fs::read_to_string(filename).expect("I/O error");
+    return contents
         .lines()
-        .map(|line| Hand::from_string(line.to_string(), false))
+        .map(|line| Hand::from_string(line.to_string(), jokers))
         .flatten()
         .collect();
+}
+
+pub fn part1(args: &Args) -> u64 {
+    let mut hands: Vec<Hand> = load_hands(&args.file, false);
 
     hands.sort_unstable();
-    let result = hands
+    return hands
         .iter()
         .enumerate()
         .map(|(i, hand)| (i as u64 + 1) * hand.bet)
         .sum();
-
-    for (i, h) in hands.iter().enumerate() {
-        let rank = i as u64 + 1;
-        println!("{} - {:?}", rank, h);
-    }
-    return result;
 }
 
 pub fn part2(args: &Args) -> u64 {
-    let contents = fs::read_to_string(&args.file).expect("I/O error");
-    let mut max_score: u64 = 0;
-    let mut hands: Vec<Hand> = contents
-        .lines()
-        .map(|line| Hand::from_string(line.to_string(), true))
-        .flatten()
-        .collect();
+    let mut hands: Vec<Hand> = load_hands(&args.file, true);
 
     hands.sort_unstable();
-    let result = hands
+    return hands
         .iter()
         .enumerate()
         .map(|(i, hand)| (i as u64 + 1) * hand.bet)
         .sum();
-
-    for (i, h) in hands.iter().enumerate() {
-        let rank = i as u64 + 1;
-        println!("{} - {:?}", rank, h);
-    }
-    return result;
 }
 pub fn entrypoint(args: &Args) {
     if !args.part2 {
