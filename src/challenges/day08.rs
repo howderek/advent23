@@ -1,6 +1,6 @@
+use advent23::vendor::lcm;
 use clap;
-use core::time;
-use std::{collections::HashMap, fs, str, thread::sleep};
+use std::{collections::HashMap, fs};
 
 #[derive(clap::Args, Debug)]
 pub struct Args {
@@ -74,22 +74,6 @@ pub fn part1(args: &Args) -> u64 {
     let orig_stack = parse_traversal_stack(parts[0]);
     let tree = parse_tree(parts[1]);
     follow_path(vec!["AAA"], &tree, &orig_stack)
-}
-
-pub fn lcm(nums: &[u64]) -> u64 {
-    if nums.len() == 1 {
-        return nums[0];
-    }
-    let a = nums[0];
-    let b = lcm(&nums[1..]);
-    a * b / gcd_of_two_numbers(a, b)
-}
-
-fn gcd_of_two_numbers(a: u64, b: u64) -> u64 {
-    if b == 0 {
-        return a;
-    }
-    gcd_of_two_numbers(b, a % b)
 }
 
 pub fn part2(args: &Args) -> u64 {
