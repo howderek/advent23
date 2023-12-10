@@ -126,7 +126,7 @@ impl Tile {
     pub fn is_connected(&self, world: &Vec<Vec<char>>, other: &Self) -> bool {
         let c = other.char_at(world);
         if other.x == self.x && other.y == self.y + 1 {
-            return c == Some('|') || c == Some('L') || c == Some('J');
+            return c == Some('|') || c == Some('L') || c == Some('J') || c == Some('S');
         } else if other.x == self.x && self.y > 0 && other.y == self.y - 1 {
             return c == Some('|') || c == Some('7') || c == Some('F') || c == Some('S');
         } else if self.x > 0 && other.x == self.x - 1 && other.y == self.y {
@@ -259,7 +259,7 @@ fn count_inside(world: &mut Vec<Vec<char>>, walls: &HashSet<Tile>) -> u64 {
                 t = next;
             }
             if left == 0 {
-                print!("{}", c);
+                print!(" ");
                 continue;
             }
 
@@ -275,7 +275,7 @@ fn count_inside(world: &mut Vec<Vec<char>>, walls: &HashSet<Tile>) -> u64 {
                 t = next;
             }
             if right == 0 {
-                print!("{}", c);
+                print!(" ");
                 continue;
             }
 
@@ -291,7 +291,7 @@ fn count_inside(world: &mut Vec<Vec<char>>, walls: &HashSet<Tile>) -> u64 {
                 t = next;
             }
             if bottom == 0 {
-                print!("{}", c);
+                print!(" ");
                 continue;
             }
 
@@ -307,16 +307,16 @@ fn count_inside(world: &mut Vec<Vec<char>>, walls: &HashSet<Tile>) -> u64 {
                 t = next;
             }
             if top == 0 {
-                print!("{}", c);
+                print!(" ");
                 continue;
             }
 
             if (left % 2) + (right % 2) + (top % 2) + (bottom % 2) < 3 {
-                print!("{}", c);
+                print!(" ");
                 continue;
             }
 
-            print!("\x1b[1;31m{}\x1b[0m", c);
+            print!("\x1b[1;31m#\x1b[0m");
             count += 1
         }
         print!("\n");
